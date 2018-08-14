@@ -1,0 +1,59 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+{% endblock %}
+{% block body %}
+    <div id="app" v-cloak="display:none;">
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+        <legend>[[data.nickname]]：</legend>
+    </fieldset>
+    <ul class="layui-timeline">
+    <li class="layui-timeline-item">
+        <i class="layui-icon layui-timeline-axis"></i>
+        <div class="layui-timeline-content layui-text">
+            <h3 class="layui-timeline-title">个人简介:</h3>
+            <p v-html="data.userinfo">
+            </p>
+        </div>
+    </li>
+    <li class="layui-timeline-item">
+    <i class="layui-icon layui-timeline-axis"></i>
+    <div class="layui-timeline-content layui-text">
+{#    <h3 class="layui-timeline-title"><i class="layui-icon"></i>联系方式：</h3>#}
+    <ul>
+{#    <li v-if="data.phone">电话：[[data.phone]]</li>#}
+        {#    <li v-if="data.email">邮箱：[[data.email]]</li>#}
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var teacherid = B.getQueryString('teacherid');
+        var app = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: {
+                    data: {}
+                },
+                methods: {
+                    loadData: function () {
+                        var thiz = this;
+                        B.display_loading();
+                        B.callapi('get_teacher_info', {teacherid: teacherid}, function (res) {
+                            B.close_loading();
+                            thiz.data = res.data;
+                        });
+                    }
+                }
+            });
+        app.loadData();
+
+    </script>
+{% endblock %}

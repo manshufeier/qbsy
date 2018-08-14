@@ -1,0 +1,390 @@
+{% extends "xadmin/base-hui.html" %}
+{% block head %}
+{% endblock %}
+
+{% block body %}
+    <style type="text/css">
+
+        .tab_stat {
+            width: auto;
+            height: 500px;
+            border: 1px #dddddd solid;
+            margin: 2px;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+    </style>
+    {% if me.isadmin or me.is_super_reception %}
+        <div id="app" style="padding:10px 10px;" v-cloak>
+            <h3 style="padding-top: 0px;">课程群基本信息:</h3>
+            <div class="layui-row">
+                <div class="layui-col-lg6 layui-col-md12">
+                    <div class="tab_stat">
+                        <table class="layui-table" style="margin-top: 0px;" lay-size="sm">
+                            <tbody>
+                            <tr>
+                                <td><strong>课程群名称</strong></td>
+                                <td>[[classdata.name]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>课程班数量</strong></td>
+                                <td>[[classdata.course_count]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>学生数</strong></td>
+                                <td>[[classdata.student_count_true]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>预报名人次</strong></td>
+                                <td>[[classdata.preenroll_count]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>总人次</strong></td>
+                                <td>[[classdata.student_count]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>上课人次</strong></td>
+                                <td>[[classdata.course_doing_count]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>保留课时</strong></td>
+                                <td>[[classdata.course_will_doing_count]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>退课人次</strong></td>
+                                <td>[[classdata.course_leaving_count]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>退课率</strong></td>
+                                <td>[[classdata.leaving_rate]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>未开始</strong></td>
+                                <td>[[classdata.status_0]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>进行中</strong></td>
+                                <td>[[classdata.status_1]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>已结课</strong></td>
+                                <td>[[classdata.status_2]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>未开班</strong></td>
+                                <td>[[classdata.status_3]]</td>
+                            </tr>
+                            <tr>
+                                <td><strong>已停课</strong></td>
+                                <td>[[classdata.status_4]]</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="layui-col-lg6 layui-col-md12">
+                    <div id="echartsPie" class="tab_stat"></div>
+                </div>
+                <div class="layui-col-lg6 layui-col-md12">
+                    <div id="echartsPie2" class="tab_stat"></div>
+                </div>
+                <div class="layui-col-lg6 layui-col-md12">
+                    <div id="echartsPie3" class="tab_stat"></div>
+                </div>
+            </div>
+            <h3 style="margin-left: 10px;">各课程班详细信息:</h3>
+            <table class="layui-table" lay-size="sm" style="margin: 10px;">
+                <thead>
+                <tr>
+                    <th>年级</th>
+                    <th>课程名</th>
+                    <th>课程状态</th>
+                    <th>老师</th>
+                    <th>课时</th>
+                    <th>课程时间</th>
+                    <th>总人数</th>
+                    <th>上课人数</th>
+                    <th>保留课时人数</th>
+                    <th>退课人数</th>
+                    <th>退课率</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="item in items">
+                    <td>[[item.gradeinfo_text]]</td>
+                    <td v-html="item.coursetwo_text"></td>
+                    <td v-html="item.coursestatus_text"></td>
+                    <td>[[item.teacherinfo_name]]</td>
+                    <td>[[item.coursecount]]</td>
+                    <td v-html="item.coursestartendtime"></td>
+                    <td>[[item.studentcount]]</td>
+                    <td>[[item.course_doing_count]]</td>
+                    <td>[[item.course_will_doing_count]]</td>
+                    <td>[[item.course_leaving_count]]</td>
+                    <td>[[item.leaving_rate]]</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+
+    <script>
+        var params_list = [
+            {
+                modelname: 'User',
+                q__enrollinfo__enrollcourseinfo__gradecourseinfo__classinfo__id: B.getQueryString('q__enrollinfo__enrollcourseinfo__gradecourseinfo__classinfo__id'),
+                nameparam: 'school__schoolname',
+                valueparam: 'school',
+                is_set: 1,
+                title: B.getQueryString('title') + '学校生源统计',
+                subtitle: '为学生生源比例,非课程人次'
+            },
+            {
+                modelname: 'User',
+                q__enrollinfo__enrollcourseinfo__gradecourseinfo__classinfo__id: B.getQueryString('q__enrollinfo__enrollcourseinfo__gradecourseinfo__classinfo__id'),
+                nameparam: 'grade__gradename',
+                valueparam: 'grade',
+                is_set: 1,
+                title: B.getQueryString('title') + '年级届次生源统计',
+                subtitle: '为学生生源比例, 非课程人次'
+            },
+            {
+                modelname: 'EnrollCourseInfo',
+                q__gradecourseinfo__classinfo__id: B.getQueryString('q__enrollinfo__enrollcourseinfo__gradecourseinfo__classinfo__id'),
+                nameparam: 'gradecourseinfo__id',
+                valueparam: 'gradecourseinfo',
+                showname: 'showname_stat',
+                modelname_two: 'ClassCourseInfo',
+                title: B.getQueryString('title') + '班级生源统计',
+                subtitle: '为学生课程人次, 非真实学生人数'
+            }
+        ];
+        var elem_list = [
+            'echartsPie',
+            'echartsPie2',
+            'echartsPie3'
+        ];
+        B.callapi('get_model_stat', params_list[0], function (res) {
+            if (res && res.data) {
+                option = {
+                    title: {
+                        text: res.data.title,
+                        subtext: res.data.subtitle,
+                        x: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            mark: {show: true},
+                            dataView: {show: true, readOnly: false},
+                            magicType: {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    calculable: true,
+                    series: [
+                        {
+                            name: res.data.subtitle,
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: res.data.items,
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                },
+                                normal: {
+                                    label: {
+                                        show: true,
+                                        formatter: '{b} : {c} ({d}%)'
+                                    },
+                                    labelLine: {show: true}
+                                }
+                            }
+                        }
+                    ]
+                };
+                echarts.init(document.getElementById(elem_list[0])).setOption(option);
+            }
+        });
+        B.callapi('get_model_stat', params_list[1], function (res) {
+            if (res && res.data) {
+                option = {
+                    title: {
+                        text: res.data.title,
+                        subtext: res.data.subtitle,
+                        x: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            mark: {show: true},
+                            dataView: {show: true, readOnly: false},
+                            magicType: {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    calculable: true,
+                    series: [
+                        {
+                            name: res.data.subtitle,
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: res.data.items,
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                },
+                                normal: {
+                                    label: {
+                                        show: true,
+                                        formatter: '{b} : {c} ({d}%)'
+                                    },
+                                    labelLine: {show: true}
+                                }
+                            }
+                        }
+                    ]
+                };
+                echarts.init(document.getElementById(elem_list[1])).setOption(option);
+            }
+        });
+        B.callapi('get_model_stat', params_list[2], function (res) {
+            if (res && res.data) {
+                option = {
+                    title: {
+                        text: res.data.title,
+                        subtext: res.data.subtitle,
+                        x: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            mark: {show: true},
+                            dataView: {show: true, readOnly: false},
+                            magicType: {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    calculable: true,
+                    series: [
+                        {
+                            name: res.data.subtitle,
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: res.data.items,
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                },
+                                normal: {
+                                    label: {
+                                        show: true,
+                                        formatter: '{b} : {c} ({d}%)'
+                                    },
+                                    labelLine: {show: true}
+                                }
+                            }
+                        }
+                    ]
+                };
+                echarts.init(document.getElementById(elem_list[2])).setOption(option);
+            }
+        });
+        var app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#app',
+            data: B.gen_data(function (params) {
+                params.classdata = {};
+            }),
+            methods: {
+                loadData: function (pageindex, pagesize) {
+                    var thiz = this;
+                    B.gen_loadData(app, 'getModelList', {
+                        size: -1,
+                        modelname: 'ClassCourseInfo',
+                        q__classinfo_id: B.getQueryString('q__enrollinfo__enrollcourseinfo__gradecourseinfo__classinfo__id')
+                    }, 'page', pageindex, pagesize, function (thiz) {
+
+                    });
+                    B.callapi('get_class_data', {
+                        modelname: 'ClassInfo',
+                        id: B.getQueryString('q__enrollinfo__enrollcourseinfo__gradecourseinfo__classinfo__id')
+                    }, function (res) {
+                        if (res && res.data) {
+                            thiz.classdata = res.data;
+                        }
+                    });
+                }
+            }
+        });
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+        $(function () {
+
+        });
+
+    </script>
+
+{% endblock %}

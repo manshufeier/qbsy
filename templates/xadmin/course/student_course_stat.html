@@ -1,0 +1,132 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>该学生课程统计</title>
+
+{% endblock %}
+
+{% block body %}
+
+    <style>
+
+        [v-cloak] {
+            display: none;
+        }
+
+        #app {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+    </style>
+
+    <div id="app" v-cloak>
+
+        <h3>[[info.name]]基本信息</h3>
+
+        <table class="layui-table" lay-size="sm">
+
+            <tbody>
+
+            <tr>
+                <td><strong>姓名</strong></td>
+                <td>[[info.name]]</td>
+            </tr>
+            <tr>
+                <td><strong>用户头像</strong></td>
+                <td><img :src="info.icon" style="width: 80px;height: 60px;" v-if="info.icon!=''"></td>
+            </tr>
+            <tr>
+                <td><strong>电话号码</strong></td>
+                <td>[[info.phone]]</td>
+            </tr>
+            <tr>
+                <td><strong>家庭电话</strong></td>
+                <td>[[info.homephone]]</td>
+            </tr>
+            <tr>
+                <td><strong>学校</strong></td>
+                <td>[[info.school_name]]</td>
+            </tr>
+            <tr>
+                <td><strong>年级</strong></td>
+                <td>[[info.grade_name]]</td>
+            </tr>
+            <tr>
+                <td><strong>高考分数</strong></td>
+                <td>[[info.entryexamscore]]</td>
+            </tr>
+            <tr>
+                <td><strong>录取学校</strong></td>
+                <td>[[info.entryschool]]</td>
+            </tr>
+            </tbody>
+
+        </table>
+
+        <h3>[[info.name]]课程作业情况</h3>
+
+        <table class="layui-table" lay-size="sm">
+            <thead>
+            <tr>
+                <th>作业名</th>
+                <th>完成状态</th>
+                <th>分值</th>
+                <th>评语</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in items">
+                <td>[[item.task_text]]</td>
+                <td>[[item.score_text]]</td>
+                <td>[[item.score]]</td>
+                <td>[[item.feedback]]</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        var app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#app',
+            data: B.gen_data(function (params) {
+                params.info = {};
+                params.items = [];
+            }),
+            methods: {
+                loadData: function (pageindex, pagesize) {
+                    var thiz = this;
+                    B.callapi('getModelData', {
+                        modelname: 'User',
+                        id: B.getQueryString('user_id')
+                    }, function (res) {
+                        if (res && res.data) {
+                            thiz.info = res.data;
+                        }
+                    });
+                    B.callapi('getModelList', {
+                        modelname: 'TaskRecord',
+                        q__user__id: B.getQueryString('user_id'),
+                        q__task__course__id: B.getQueryString('course_id')
+                    }, function (res) {
+                        if (res && res.data && res.data.items) {
+                            thiz.items = res.data.items;
+                        }
+                    });
+                }
+            }
+        });
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+    </script>
+
+{% endblock %}

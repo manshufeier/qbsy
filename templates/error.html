@@ -1,0 +1,15 @@
+﻿{% extends "xadmin/base-hui.html" %}
+{% block head %}
+	<title>访问出错, Oops</title>
+	<style type="text/css">
+		
+	</style>
+{% endblock %}
+{% block body %}
+	<h1 id="content" style="text-align:center;">
+		{{err|default:'访问出错!'}} 
+		{%if not stopback%}
+		<a href="#" onclick="B.back();">返回</a>
+		{%endif%}
+	</h1>
+{% endblock %}

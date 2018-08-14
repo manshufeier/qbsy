@@ -1,0 +1,311 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>模型列表</title>
+
+{% endblock %}
+
+
+{% block body %}
+
+
+    <style>
+        td, th {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+
+    </style>
+
+    <div id="app" style="padding: 10px;" v-cloak>
+        {% if mp and mp.is_add %}
+            <button class="btn btn-primary radius size-S"
+                    :onclick="'B.addWindowTab(\'添加'+verbose_name+'\',\'/xadmin/editmodel.html\'+ B.urlEncodeAll(B.getSearchKeyValues()) );'"
+                    v-if="is_add">
+                <i class="Hui-iconfont">&#xe604;</i>&nbsp;添加
+            </button>
+        {% endif %}
+        {% if mp and mp.is_delete %}
+            <button class="btn btn-danger radius size-S"
+                    onclick="B.del_datas('select_elem',B.getQueryString('modelname'),function() {app.loadData(app.$data.pageindex, app.$data.pagesize);});"
+                    v-if="is_deleted">
+                <i class="Hui-iconfont">&#xe609;</i>&nbsp;删除
+            </button>
+        {% endif %}
+        {% if mp and mp.is_top %}
+            <button class="btn btn-warning radius size-S"
+                    onclick="B.top_datas('select_elem',B.getQueryString('modelname'),function() {app.loadData(app.$data.pageindex, app.$data.pagesize);});"
+                    v-if="is_deleted">
+                <i class="Hui-iconfont">&#xe684;</i>&nbsp;置顶
+            </button>
+            <button class="btn radius size-S"
+                    onclick="cancel_top('select_elem',B.getQueryString('modelname'),function() {app.loadData(app.$data.pageindex, app.$data.pagesize);});"
+                    v-if="is_deleted">取消置顶
+            </button>
+        {% endif %}
+        {% if mp and mp.is_export %}
+            <button class="btn btn-success radius size-S"
+                    onclick="export_excel();"
+                    v-if="isexport">
+                <i class="Hui-iconfont">&#xe634;</i>&nbsp;导出
+            </button>
+        {% endif %}
+        <template v-for="field in headopfield">
+            <button :class="field.class" :onclick="field.op">[[field.text]]</button>&nbsp;
+        </template>
+
+        <div class="layui-form-item" style="float: right">
+            <input type="text" id="search_text" style="width:150px" class="input-text radius size-S"
+                   oninput="is_search_blank();"
+                   placeholder="输入你的搜索内容">
+        </div>
+
+        <template v-for="field in selectfield" v-if="selectfield">
+            <span class="select-box radius size-S" style="width: 120px;">
+                <select class="select" onchange="app.loadData(app.$data.pageindex,app.$data.pagesize);"
+                        :id="field.selectid" select_name="select" :model_q="field.model_q">
+                    <option value="" selected>[[field.selectname]]</option>
+                    <option :value="d.id" v-for="d in field.selectlist">[[d.name]]</option>
+                </select>
+            </span>&nbsp;
+        </template>
+
+        <table class="layui-table" lay-size="sm">
+            <thead>
+            <tr>
+                <th width="5%" v-if="is_deleted"><input id="select_checkbox" type="checkbox"
+                                                        onclick="B.gen_select_all('select_checkbox','select_elem');">
+                </th>
+                <template v-for="field in showfield">
+                    <template v-if="field.showkey">
+                        <th v-if="field.showvalue==field.showkeyvalue">[[field.showname]]</th>
+                    </template>
+                    <template v-else>
+                        <th>[[field.showname]]</th>
+                    </template>
+                </template>
+                <th v-if="is_edit"><span v-if="show_op">操作</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in items" onclick="B.select_selected(this);">
+                <th class="sel" v-for="(data,index) in item" v-if="index==0&&is_deleted">
+                    <input type="checkbox" :id="data.data"
+                           name="select_elem"
+                           onclick="B.select_selected($(this).parent().parent());">
+                </th>
+                <td v-for="(data,index) in item" v-if="index!=0&&data.isshow">
+                    <span v-if="data.type=='text'">[[data.data]]</span>
+                    <span v-if="data.type=='img'||data.type=='usericon'"><img :src="data.data"
+                                                                              style="width: 60px;height: auto;"></span>
+                    <span v-if="data.type=='imgs'">
+                        <template v-if="data.data.length>1">
+                            <img :src="d.small_info.url" v-for="d in data.data" style="width: 30px;height: auto;">
+                        </template>
+                        <template v-if="data.data.length==1">
+                            <img :src="d.small_info.url" style="width: 60px;height: auto;" v-for="d in data.data">
+                        </template>
+                    </span>
+                    <span v-if="data.type=='file'"><a :href="data.data.url" :download="data.data.filename">[[data.data.filename]]</a></span>
+                    <span v-if="data.type=='html'" v-html="data.data"></span>
+                    <span v-if="data.type=='oplinks'" v-if="show_op">
+                        <span v-for="(link,linkindex) in data.data">
+
+                            <template v-if="!link.islink">
+                                <span v-html="link.linkname" v-if="link.showvalue==link.showkeyvalue"
+                                      v-html="link.linkname"></span>
+                            </template>
+                            <template v-else>
+                                <template v-if="link.showvalue">
+                                    <a href="javascript:void(0);" :onclick="link.link"
+                                       v-if="link.showvalue==link.showkeyvalue" v-html="link.linkname+'&nbsp;'"></a>
+                                </template>
+                                <template v-else>
+                                    <a href="javascript:void(0);" :onclick="link.link"
+                                       v-html="link.linkname+'&nbsp;'"></a>
+                                </template>
+                            </template>
+                        </span>
+                    </span>
+                    <span v-if="data.type=='strlist'"><span
+                            v-for="(n,index) in data.data">[[n&&(n.name||n.showname)]]&nbsp;<span v-if="(index+1)%5==0"><br></span></span></span>
+                    <span v-if="index==1&&data.ordering!=0" class="layui-badge-rim layui-bg-green">已置顶</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <span id="page"></span>
+    </div>
+
+
+{% endblock %}
+
+{% block script %}
+
+    <script>
+        var search_params = B.getSearchKeyValues();
+        search_params['orderby'] = '-ordering,-id';
+        search_params['s_user_id'] ={{ me.id }};
+        var app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#app',
+            data: B.gen_data(function (params) {
+            }),
+            methods: {
+                loadData: function (pageindex, pagesize) {
+                    var thiz = this;
+                    B.callapi('get_model_search_key', {modelname: B.getQueryString('modelname')}, function (res) {
+                        if (res && res.data) {
+                            search_params[res.data] = $("#search_text").val();
+                        } else {
+                            search_params['q__name__icontains__or__title__icontains'] = $('#search_text').val();
+                        }
+                    }, null, false);
+                    for (var m = 0; m < thiz.selectfield.length; m++) {
+                        search_params[thiz.selectfield[m].model_q] = $('#' + thiz.selectfield[m].selectid).val();
+                    }
+                    B.gen_loadData(app, "getModelList",
+                        search_params,
+                        'page', pageindex, pagesize, function (thiz) {
+                            for (var i = 0; i < thiz.items.length; i++) {
+                                var tmp = [];
+                                tmp.push({type: 'selid', data: 'sel_' + thiz.items[i].id});
+                                for (var j = 0; j < thiz.showfield.length; j++) {
+                                    var type = thiz.showfield[j].type;
+                                    var data = thiz.items[i][thiz.showfield[j].name];
+                                    var isshow = true;
+                                    if (thiz.showfield[j].showkey && thiz.showfield[j].showvalue != B.getQueryString(thiz.showfield[j].showkey)) {
+                                        isshow = false;
+                                    }
+                                    if (type == 'file') {
+                                        data = JSON.parse(data);
+                                    }
+                                    if (type == 'img') {
+                                        var img_url = data;
+                                        if (img_url != null) {
+                                            var img_array = img_url.split('.');
+                                            var img_type = img_array[img_array.length - 1];
+                                            data = img_url + '.small.' + img_type;
+                                        }
+                                    }
+                                    if (type == 'imgs') {
+
+                                    }
+                                    tmp.push({
+                                        type: type,
+                                        data: data,
+                                        isshow: isshow,
+                                        ordering: thiz.items[i].ordering
+                                    })
+                                }
+                                var links = [];
+                                links.push({
+                                    linkname: '查看',
+                                    link: "view_model('查看" + (thiz.items[i].title || thiz.items[i].name || thiz.items[i].showname) + "','/xadmin/viewmodel.html" + B.urlEncodeAll(B.getSearchKeyValues()) + '&id=' + thiz.items[i].id + "')",
+                                    islink: true
+                                });
+                                {% if mp and mp.is_edit %}
+                                    links.push({
+                                        linkname: '编辑',
+                                        link: "B.addWindowTab('编辑" + (thiz.items[i].title || thiz.items[i].name) + "','/xadmin/editmodel.html" + B.urlEncodeAll(B.getSearchKeyValues()) + '&id=' + thiz.items[i].id + "')",
+                                        islink: true
+                                    });
+                                {% endif %}
+                                for (var m = 0; m < thiz.linkfield.length; m++) {
+                                    links.push({
+                                        linkname: thiz.linkfield[m].linkname,
+                                        link: thiz.items[i][thiz.linkfield[m].name],
+                                        showkey: thiz.linkfield[m].showkey,
+                                        showvalue: thiz.linkfield[m].showvalue,
+                                        showkeyvalue: B.getQueryString(thiz.linkfield[m].showkey),
+                                        islink: thiz.linkfield[m].islink
+                                    });
+                                }
+                                tmp.push({type: 'oplinks', data: links, isshow: true});
+                                if (!thiz.is_edit) {
+                                    tmp.removeAt(tmp.length - 1);
+                                }
+                                thiz.items[i] = tmp;
+                            }
+                        }, true);
+                }
+            }
+        });
+
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+        function onTabSelected() {
+            app.loadData(app.$data.pageindex, app.$data.pagesize);
+        }
+
+        function export_excel() {
+            B.export_excel(search_params);
+        }
+
+        $(function () {
+            document.onkeydown = function (e) {
+                var ev = document.all ? window.event : e;
+                if (ev.keyCode == 13) {
+                    app.loadData(app.$data.pageindex, app.$data.pagesize);
+                }
+            }
+        });
+
+        function is_search_blank() {
+            if ($('#search_text').val() === '') {
+                app.loadData(app.$data.pageindex, app.$data.pagesize);
+            }
+        }
+
+        function cancel_top(select_elem_name, modelname, func) {
+            ids = B.get_select_ids(select_elem_name);
+            if (ids.length > 0) {
+                Base.callapi("cancel_top", {modelname: modelname, ids: ids.join(',')}, function (res) {
+                    if (res && res.data) {
+                        func();
+                        var select_elem_list = $("input[name=" + select_elem_name + "]");
+                        for (var i = 0; i < select_elem_list.size(); i++) {
+                            $(select_elem_list[i]).prop('checked', false);
+                            $(select_elem_list[i]).parent().parent().removeClass('success');
+                        }
+                    }
+                });
+            }
+        };
+
+        function view_model(title, url) {
+            layer.open({
+                type: 2,
+                title: title,
+                shadeClose: true,
+                shade: 0.8,
+                area: ['80%', '90%'],
+                content: url
+            });
+        }
+
+        function export_course_task() {
+            B.display_loading();
+            B.callapi('export_course_task', {courseid: B.getQueryString('q__course_id')}, function (res) {
+                if (res) {
+                    B.close_loading();
+                    window.location.href = res.data;
+                }
+            });
+        }
+
+    </script>
+
+{% endblock %}

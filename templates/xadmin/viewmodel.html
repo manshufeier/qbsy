@@ -1,0 +1,113 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>查看模型</title>
+
+{% endblock %}
+
+
+{% block body %}
+
+    <style>
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+
+    </style>
+
+    <div id="app" style="padding: 10px;" v-cloak>
+        <table class="layui-table" lay-size="sm">
+            <tbody>
+            <tr v-for="item in edititem">
+                <td v-html="item.showname" style="font-weight: bold"></td>
+                <td v-if="item.type=='text'||item.type=='select'||item.type=='laydate'||item.type=='textarea'||item.type=='select_2'">
+                    [[item.data]]
+                </td>
+                <td v-else-if="item.type=='password'">******</td>
+                <td v-else-if="item.type=='usericon'||item.type=='img'">
+                    <img :src="item.data+'?type=small'" style="width: 80px;height: 60px;">&nbsp;&nbsp;<a
+                        :href="item.data" target="_blank" v-if="item.data&&item.data!=''">查看大图</a>
+                </td>
+                <td v-else-if="item.type=='kingeditor'||item.type=='kingeditor'" v-html="item.data"></td>
+                <td v-else-if="item.type=='file'">
+                    <a :href="item.data.url" :download="item.data.filename">[[item.data.filename]]</a>
+                </td>
+                <td v-else></td>
+            </tr>
+            </tbody>
+        </table>
+        <span id="page"></span>
+    </div>
+
+
+{% endblock %}
+
+{% block script %}
+
+    <script type="text/javascript">
+        Vue.filter('isrequired', function (value) {
+            if (value) {
+                return value.toString().indexOf("required") > -1;
+            } else return false;
+        });
+        var app = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: {
+                    edititem: [],
+                },
+                methods: {
+                    loadData: function () {
+                        var thiz = this;
+                        var editfield_params = B.getSearchKeyValues();
+                        editfield_params.s_user_id ={{ me.id }};
+                        B.callapi('get_model_viewfield', editfield_params, function (res) {
+                            if (res && res.data) {
+                                thiz.edititem = res.data.edititem;
+                                B.callapi('getModelData', {
+                                    modelname: editfield_params.modelname,
+                                    id: editfield_params.id
+                                }, function (ress) {
+                                    if (ress && ress.data) {
+                                        for (var i = 0; i < thiz.edititem.length; i++) {
+                                            if (thiz.edititem[i].type == 'select' || thiz.edititem[i].type == 'select_2') {
+                                                thiz.edititem[i]['data'] = ress.data[thiz.edititem[i].name + '_name'] || ress.data[thiz.edititem[i].name + '_text'];
+                                            } else if (thiz.edititem[i].type == 'laydate') {
+                                                thiz.edititem[i]['data'] = ress.data[thiz.edititem[i].name + '_text'];
+                                            } else if (thiz.edititem[i].type == 'file') {
+                                                thiz.edititem[i]['data'] = JSON.parse(ress.data[thiz.edititem[i].name]);
+                                            }
+                                            else
+                                                thiz.edititem[i]['data'] = ress.data[thiz.edititem[i].name];
+                                        }
+                                    }
+                                }, null, false);
+                            }
+                        }, null, false);
+                    }
+                }
+            });
+        app.loadData(null, null);
+
+        function list_slice(list, slice_count) {
+            var result = [];
+            for (var i = 0, len = list.length; i < len; i += slice_count) {
+                result.push(list.slice(i, i + slice_count));
+            }
+            return result;
+        }
+
+    </script>
+
+{% endblock %}

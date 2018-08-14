@@ -1,0 +1,167 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>课程及作业统计</title>
+
+{% endblock %}
+
+{% block body %}
+
+    <style>
+
+        [v-cloak] {
+            display: none;
+        }
+
+        #app {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+    </style>
+
+    <div id="app" v-cloak>
+
+        <h3>课程基本信息</h3>
+
+        <table class="layui-table" lay-size="sm">
+
+            <tbody>
+
+            <tr>
+                <td><strong>课程群</strong></td>
+                <td>[[info.classinfo_name]]</td>
+            </tr>
+            <tr>
+                <td><strong>届次（年级）</strong></td>
+                <td>[[info.gradeinfo_text]]</td>
+            </tr>
+            <tr>
+                <td><strong>老师</strong></td>
+                <td>[[info.teacherinfo_name]]</td>
+            </tr>
+            <tr>
+                <td><strong>课程</strong></td>
+                <td>[[info.courseinfo_name]]</td>
+            </tr>
+            <tr>
+                <td><strong>课程班</strong></td>
+                <td>[[info.courseclassname]]</td>
+            </tr>
+            <tr>
+                <td><strong>课程状态</strong></td>
+                <td v-html="info.coursestatus_text"></td>
+            </tr>
+            <tr>
+                <td><strong>课时</strong></td>
+                <td>[[info.coursecount]]</td>
+            </tr>
+            <tr>
+                <td><strong>开始时间</strong></td>
+                <td>[[info.coursestarttime_text]]</td>
+            </tr>
+            <tr>
+                <td><strong>结束时间</strong></td>
+                <td>[[info.courseendtime_text]]</td>
+            </tr>
+            <tr>
+                <td><strong>上课时间</strong></td>
+                <td>[[info.coursetime]]</td>
+            </tr>
+            <tr>
+                <td><strong>预报名数</strong></td>
+                <td>[[info.preenrollcount]]</td>
+            </tr>
+            <tr>
+                <td><strong>总人数</strong></td>
+                <td>[[info.studentcount]]</td>
+            </tr>
+            <tr>
+                <td><strong>上课人数</strong></td>
+                <td>[[info.course_doing_count]]</td>
+            </tr>
+            <tr>
+                <td><strong>退课人数</strong></td>
+                <td>[[info.course_leaving_count]]</td>
+            </tr>
+            <tr>
+                <td><strong>保留课时人数</strong></td>
+                <td>[[info.course_will_doing_count]]</td>
+            </tr>
+            <tr>
+                <td><strong>退课率</strong></td>
+                <td>[[info.leaving_rate]]</td>
+            </tr>
+            </tbody>
+
+        </table>
+
+        <h3>该课程作业情况</h3>
+
+        <table class="layui-table" lay-size="sm">
+            <thead>
+            <tr>
+                <th>作业名</th>
+                <th>状态</th>
+                <th>总人数</th>
+                <th>完成人数</th>
+                <th>完成率</th>
+                <th>最晚提交时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in taskitems">
+                <td>[[item.taskname]]</td>
+                <td>[[item.taskstatus]]</td>
+                <td>[[item.student_count]]</td>
+                <td>[[item.done_count]]</td>
+                <td>[[item.done_rate]]</td>
+                <td>[[item.qtime_text]]</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        var app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#app',
+            data: B.gen_data(function (params) {
+                params.info = {};
+                params.taskitems = [];
+            }),
+            methods: {
+                loadData: function (pageindex, pagesize) {
+                    var thiz = this;
+                    B.callapi('getModelData', {
+                        modelname: 'ClassCourseInfo',
+                        id: B.getQueryString('id')
+                    }, function (res) {
+                        if (res && res.data) {
+                            thiz.info = res.data;
+                        }
+                    });
+                    B.callapi('getModelList', {
+                        modelname: 'Task',
+                        q__course_id: B.getQueryString('id')
+                    }, function (res) {
+                        if (res && res.data && res.data.items) {
+                            thiz.taskitems = res.data.items;
+                        }
+                    });
+                }
+            }
+        });
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "xadmin/base-hui.html" %}
+{% block body %}
+
+    <style>
+        td, th {
+            white-space: nowrap;
+        }
+
+        body {
+            padding: 10px;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+
+    {% if me.isadmin or me.isreception %}
+        <form class="layui-form" action="" id="app" style="width: 80%;margin: auto;" v-cloak>
+            <div class="layui-form-item" v-for="item in setting_data">
+                <label class="layui-form-label">[[item.name]]</label>
+                <div class="layui-input-block" v-if="item.type=='text'">
+                    <input :id="item.key" type="text" name="input" :placeholder="'请输入'+item.name"
+                           autocomplete="off"
+                           class="layui-input" :value="item.value">
+                </div>
+                <div class="layui-input-block" v-if="item.type=='wangeditor'">
+                    <div :id="item.key" name="input" property="wangeditor"></div>
+                </div>
+                <div class="layui-input-block" v-if="item.type=='largetext'">
+                <textarea name="input" :id="item.key" :placeholder="'请输入'+item.name" class="layui-textarea"
+                          :value="item.value"></textarea>
+                </div>
+                <div class="layui-input-block" v-if="item.type=='img'">
+                    <div style="position:relative" name="input" property="img">
+                        <img :src="item.value" style="width: 200px;height: 100px;" my-img="img" class="thumbnail"
+                             :img-src="item.value">&nbsp;&nbsp;
+                        <span class="layui-btn layui-btn-small"
+                              onclick="$($(this).parent().find('input')).click();">上传图片</span>
+                        <input style="display: none;" type="file" :id="item.key"
+                               :onchange="'B.upload(\''+item.key+'\',function(res){$(\'#'+item.key+'\').parent().parent().find(\'img\').attr(\'src\',res.data.url);$(\'#'+item.key+'\').parent().parent().find(\'img\').attr(\'img-src\',res.data.url)})'">
+                    </div>
+                </div>
+                <div class="layui-input-block" v-if="item.type=='bool'">
+                    <select name="input" lay-verify="required" :id="item.key">
+                        <option value=""></option>
+                        <option :value="op.id" v-for="op in item.default" v-if="op.id==item.value" selected
+                                v-html="op.name">
+                        </option>
+                        <option :value="op.id" v-for="op in item.default" v-if="op.id!=item.value"
+                                v-html="op.name"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                </div>
+            </div>
+        </form>
+    {% else %}
+        <h1 style="text-align: center;">无权访问!!!</h1>
+    {% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+
+    <script type="text/javascript">
+
+        var keys = B.getQueryString('keys');
+        var app = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: {
+                    setting_data: []
+                },
+                methods: {
+                    loadData: function () {
+                        var thiz = this;
+                        B.callapi('get_setting', {keys: keys}, function (res) {
+                            if (res && res.data) {
+                                thiz.setting_data = res.data;
+                                for (var i = 0; i < thiz.setting_data.length; i++) {
+                                    if (thiz.setting_data[i].type == 'bool') {
+                                        thiz.setting_data[i].default = [{id: 'true', name: '是'}, {
+                                            id: 'false',
+                                            name: '否'
+                                        }]
+                                    }
+                                }
+                            }
+                        }, null, false);
+                    }
+                }
+            });
+        app.loadData(null, null);
+
+        function gen_wangeditor() {
+            var items = app.$data.setting_data;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].type == 'wangeditor') {
+                    var E = window.wangEditor;
+                    var editor = new E('#' + items[i].key);
+                    editor.customConfig.uploadImgServer = '/wangeditor/uploadimg';
+                    editor.create();
+                    editor.txt.html(items[i].value);
+                }
+            }
+        }
+
+        $(function () {
+            gen_wangeditor();
+        });
+
+        function save_setting() {
+            B.display_loading();
+            data = {};
+            var input_list = $("[name='input']");
+            for (var i = 0; i < input_list.size(); i++) {
+                if ($(input_list[i])[0].tagName == 'SELECT') {
+                    data[$(input_list[i]).attr('id')] = $('#' + $(input_list[i]).attr('id')).val();
+                }
+                else if ($(input_list[i])[0].tagName == 'TEXTAREA') {
+                    data[$(input_list[i]).attr('id')] = $('#' + $(input_list[i]).attr('id')).val();
+                } else if ($(input_list[i]).attr('property') == 'img') {
+                    data[$(input_list[i]).find('input').attr('id')] = $(input_list[i]).find('img').attr('img-src');
+                } else if ($(input_list[i]).attr('property') == 'wangeditor') {
+                    data[$(input_list[i]).attr('id')] = $('#' + $(input_list[i]).attr('id')).find('.w-e-text').html();
+                }
+                else {
+                    if ($(input_list[i]).attr('type') == 'text' || $(input_list[i]).attr('type') == 'password') {
+                        data[$(input_list[i]).attr('id')] = $('#' + $(input_list[i]).attr('id')).val();
+                    }
+                }
+            }
+            B.callapi('saveSetting', data, function (res) {
+                if (res) {
+                    B.close_loading();
+                    layer.msg('保存成功！！！', {icon: 1});
+                }
+            });
+        }
+
+        $(function () {
+            $('.loading-icon', window.parent.document).remove();
+            layui.use('form', function () {
+                var form = layui.form;
+                //监听提交
+                form.on('submit(formDemo)', function () {
+                    save_setting();
+                    return false;
+                });
+                form.render();
+            });
+        });
+
+
+    </script>
+{% endblock %}

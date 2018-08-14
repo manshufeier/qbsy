@@ -1,0 +1,123 @@
+.banner {
+	margin-bottom: 10px;
+}
+.banner img {
+	width: 100%;
+}
+.breadcrumb {
+    font-size: 12px;
+    background-color: #fff;
+    margin-bottom: 0px;
+    padding: 10px 0px;
+    margin-top: 10px;
+}
+.leftmenu {
+	border-left: 12px solid #006699;
+	width: 200px;
+    margin-left: 15px;
+}
+.leftmenu h3 {
+	background: #006699;
+    color: #fff;
+    font-size: 22px;
+    line-height: 68px;
+    padding: 0 22px;
+}
+.leftmenu ul {
+    border-top: 1px solid #ddd;
+}
+.leftmenu li {
+	border-bottom: 1px solid #ddd;
+    font-size: 15px;
+    line-height: 22px;
+    zoom: 1;
+    position: relative;
+}
+.leftmenu li .nav-li {
+    color: #22132d;
+    display: block;
+    padding: 1em 0 1em 22px;
+    margin-right: 28px;
+    zoom: 1;
+}
+.leftmenu li.current .nav-li {
+    position: relative;
+    border-left: 4px solid #999;
+    left: -4px;
+    color: #006699;
+}
+.leftmenu li.current .nav-detail {
+    position: relative;
+    border-left: 4px solid #ff9600;
+    left: -4px;
+    color: #006699;
+}
+.right h1{
+	font-size: 28px;
+    color: #222;
+    padding: 0 0 0.6em 0;
+    border-bottom: 3px solid #006699;
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+.main-content {
+	margin-top: 10px;
+	text-align: justify;
+	padding-right: 10px;
+    padding-bottom: 15px;	
+}
+
+.main-content p {
+	text-indent: 32px;
+    border: none;
+    padding: 0px;
+    line-height: 1.75em;
+}
+.main-list {
+	margin-bottom: 30px;
+}
+.news-list {
+	margin-top: 0px;
+}
+.news-list span {
+	float: right;
+	color: #999;
+	padding-top: 5px;
+}
+.news-list li p a {
+	white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 600px;
+    display: inline-block;
+    overflow: hidden;
+    padding-top: 5px;
+    padding-left: 5px;
+}
+.nav-detail li {
+    padding-left: 5px;
+    display: block;
+    height: 40px;
+    line-height: 40px;
+}
+.nav-detail li a {
+    font-size: 12px;
+    color: #3e3e3e;
+    font-family: "新宋体";
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1.1;
+}
+.gly {
+    position: absolute;
+    font-size: 10px;
+    color: #006699;
+    border-left: 1px solid #ddd;
+    padding: 2em 4px;
+    cursor: pointer;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+.subnav-li {
+    margin-left: 20px;
+}

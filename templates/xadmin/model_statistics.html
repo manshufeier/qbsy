@@ -1,0 +1,95 @@
+{% extends "xadmin/base-hui.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+    <style type="text/css">
+
+    </style>
+    {% if me.isadmin %}
+        <div id="app" style="padding:10px 10px;">
+            <div id="echartsPie" style="width: auto;height:600px;"></div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+
+    <script>
+        var params = B.getSearchKeyValues();
+        B.callapi('get_model_stat', params, function (res) {
+            if (res && res.data) {
+                option = {
+                    title: {
+                        text: res.data.title,
+                        subtext: res.data.subtitle,
+                        x: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+{#                    legend: {#}
+{#                        orient: 'vertical',#}
+{#                        x: 'left',#}
+{#                        data: res.data.legenddata#}
+{#                    },#}
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            mark: {show: true},
+                            dataView: {show: true, readOnly: false},
+                            magicType: {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    calculable: true,
+                    series: [
+                        {
+                            name: res.data.subtitle,
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: res.data.items,
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                },
+                                normal: {
+                                    label: {
+                                        show: true,
+                                        formatter: '{b} : {c} ({d}%)'
+                                    },
+                                    labelLine: {show: true}
+                                }
+                            }
+                        }
+                    ]
+                };
+                echarts.init(document.getElementById('echartsPie')).setOption(option);
+            }
+        });
+
+
+        $(function () {
+
+        });
+
+    </script>
+
+{% endblock %}

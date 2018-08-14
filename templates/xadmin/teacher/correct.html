@@ -1,0 +1,98 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>批改作业</title>
+
+{% endblock %}
+
+{% block body %}
+
+    <style>
+        .no_wrap {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+
+        .layui-form-item .layui-input-inline {
+            float: left;
+            width: 400px;
+            margin-right: 10px;
+        }
+
+    </style>
+
+    <div id="app" style="width: 80%;margin: auto;padding: 10px;" v-cloak="display:none;">
+
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">作业</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="password" lay-verify="required" disabled="disabled"
+                           autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">作业</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">学生姓名</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="password" lay-verify="required" disabled="disabled"
+                           autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">学生姓名</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">分数</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="password" lay-verify="required"
+                           autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">请输入分数</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">评语</label>
+                <div class="layui-input-inline">
+                    <textarea name="desc" placeholder="请输入评语" class="layui-textarea"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux">请输入评语</div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        layui.use('form', function () {
+            var form = layui.form;
+
+            //监听提交
+            form.on('submit(formDemo)', function (data) {
+                layer.msg(JSON.stringify(data.field));
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

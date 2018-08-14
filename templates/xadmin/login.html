@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]> <html lang="en" class="no-js ie6 lt8"> <![endif]-->
+<!--[if IE 7 ]>    <html lang="en" class="no-js ie7 lt8"> <![endif]-->
+<!--[if IE 8 ]>    <html lang="en" class="no-js ie8 lt8"> <![endif]-->
+<!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="en" class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="UTF-8"/>
+    <title>登录</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Login and Registration Form with HTML5 and CSS3"/>
+    <meta name="keywords" content="html5, css3, form, switch, animation, :target, pseudo-class"/>
+    <meta name="author" content="Codrops"/>
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}login/demo.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}login/style.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}login/animate-custom.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/layui/css/layui.css"/>
+</head>
+<body>
+    <div style="z-index:1000;padding-top:190px;color:darkblue;position:fixed;right:0;left:0;margin:auto;width:100px; height:25px;display: none;"
+         class="loading-login">
+        <span>登录中...</span>
+        <i class="layui-icon layui-anim layui-anim-rotate layui-anim-loop" style="display:inline-block;font-size: 25px;">&#xe63d;</i></div>
+<div class="container">
+    <header>
+        <h1>清北书院办公系统</h1>
+    </header>
+    <section>
+        <div id="container_demo">
+            <div id="wrapper">
+                <div id="login" class="animate form">
+                    <form>
+                        <h1>登录</h1>
+                        <p>
+                            <label for="username" class="uname" data-icon="u"> 用户名 </label>
+                            <input id="username" name="username" required="required" type="text" placeholder="输入用户名"/>
+                        </p>
+                        <p>
+                            <label for="password" class="youpasswd" data-icon="p"> 密码</label>
+                            <input id="password" name="password" required="required" type="password"
+                                   placeholder="输入密码"/>
+                        </p>
+                        <p class="login button">
+                            <input type="submit" value="登录" id="btnLogin"/>
+                        </p>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/base.js?_={{ site.staticversion }}"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/iblog.js?_={{ site.staticversion }}"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}lib/layui/layui.js"></script>
+    <script type="text/javascript">
+        if (window.top != window) {
+            window.top.location.href = window.location.href;
+        }
+        function setLanguage(lang) {
+            B.callapi('setLanguage', {lang: lang}, function (res) {
+                if (res) {
+                    window.location.reload();
+                }
+            });
+        }
+        $(function () {
+            $("#btnLogin").click(function (event) {
+                $('.loading-login').show();
+                Base.callapi("login", {
+                    username: $("#username").val(),
+                    password: $("#password").val(),
+                }, function (res) {
+                    if (res) {
+                        setTimeout(function () {
+                            document.location.href = res['data']['goto'];
+                        }, 600);
+                    }
+                },function (res) {
+                    $('.loading-login').hide();
+                });
+                return false;
+            });
+        });
+        document.onkeydown = function (event) {
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if (e && e.keyCode == 13) { // enter 键
+                $("#btnLogin").click();
+            }
+        };
+    </script>
+</html>

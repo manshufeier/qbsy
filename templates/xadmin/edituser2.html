@@ -1,0 +1,141 @@
+{% extends "xadmin/base-hui.html" %}
+{% block body %}
+
+    <style>
+        body {
+            padding: 10px;
+        }
+
+        i.layui-anim {
+            display: inline-block
+        }
+    </style>
+
+    <form class="layui-form" action="" id="app" style="width: 80%;margin: auto;" v-cloak>
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户名</label>
+            <div class="layui-input-inline">
+                <input id="username" type="text" name="input" placeholder="请输入用户名"
+                       autocomplete="off" lay-verify="required"
+                       class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">用户名不能为空</div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">密码</label>
+            <div class="layui-input-inline">
+                <input id="password" type="password" name="input" placeholder="请输入密码"
+                       autocomplete="off"
+                       class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">密码不能为空</div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属角色</label>
+            <div class="layui-input-inline" >
+                <select name="input" lay-verify="required" id="role">
+                    <option value=""></option>
+                    <option :value="item.id" v-for="item in items" v-html="item.name"></option>
+                </select>
+            </div>
+            <div class="layui-form-mid layui-word-aux">所属角色不能为空</div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">真实姓名</label>
+            <div class="layui-input-inline">
+                <input id="truename" type="text" name="input" placeholder="请输入真实姓名"
+                       autocomplete="off"
+                       class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">联系电话</label>
+            <div class="layui-input-inline">
+                <input id="phone" type="text" name="input" placeholder="请输入联系电话"
+                       autocomplete="off"
+                       class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">电子邮件</label>
+            <div class="layui-input-inline">
+                <input id="email" type="text" name="input" placeholder="请输入电子邮件"
+                       autocomplete="off"
+                       class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formEdit">立即提交</button>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+
+        var role_select = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#role',
+                data: {
+                    items: []
+                },
+                methods: {
+                    loadData: function () {
+                        var thiz = this;
+                        B.callapi('get_select_model_list', {
+                            modelname: 'Role',
+                        }, function (res) {
+                            if (res && res.data) {
+                                thiz.items = res.data;
+                            }
+                        }, null, false);
+                    }
+                }
+            });
+
+        role_select.loadData();
+
+        $(function () {
+
+            layui.use('form', function () {
+                var form = layui.form;
+                form.verify({
+                    username: function (value, item) { //value：表单的值、item：表单的DOM对象
+                        if (!new RegExp("^[a-zA-Z0-9_\u4e00-\u9fa5\\s·]+$").test(value)) {
+                            return '用户名不能有特殊字符';
+                        }
+                        if (/(^\_)|(\__)|(\_+$)/.test(value)) {
+                            return '用户名首尾不能出现下划线\'_\'';
+                        }
+                        if (/^\d+\d+\d$/.test(value)) {
+                            return '用户名不能全为数字';
+                        }
+                    }
+                    , password: [
+                        /^[\S]{6,12}$/
+                        , '密码必须6到12位，且不能出现空格'
+                    ]
+                });
+                //监听提交
+                form.on('submit(formEdit)', function () {
+                    B.save_data('saveUser',null,'id','input',function(){});
+                    return false;
+                });
+                form.render();
+            });
+            B.gen_edit("get_user_data", {id: B.getQueryString("id")}, 'id', 'input');
+        });
+    </script>
+{% endblock %}
+
+

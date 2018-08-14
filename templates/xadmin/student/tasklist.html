@@ -1,0 +1,130 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>作业列表</title>
+
+{% endblock %}
+
+{% block body %}
+
+    <style>
+        .no_wrap {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+
+    </style>
+
+    <div id="app" style="margin: 10px;" v-cloak="display:none;">
+
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th class="no_wrap">基本信息</th>
+{#                <th class="no_wrap">作业文件</th>#}
+                <th>成绩</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr v-for="item in items">
+                <td width="60%">
+                    <div class="layui-row">
+                        <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+                            课程：[[item.course_text]]
+                            <span class="layui-badge layui-bg-orange"
+                                  v-if="item.taskstatus_id==0">[[item.taskstatus]]</span>
+                            <span class="layui-badge layui-bg-green"
+                                  v-if="item.taskstatus_id==1">[[item.taskstatus]]</span>
+                            <span class="layui-badge" v-if="item.taskstatus_id==2">[[item.taskstatus]]</span>
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="layui-col-xs12 layui-col-sm6 layui-col-md6">
+                            作业名：[[item.taskname]]
+                        </div>
+                        <div class="layui-col-xs12 layui-col-sm6 layui-col-md6">
+                            截至时间：[[item.qtime_text]]
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="layui-col-xs12 layui-col-sm6 layui-col-md6">
+                            作业文件：<span v-html="item.files_link"></span>
+                        </div>
+                        <div class="layui-col-xs12 layui-col-sm6 layui-col-md6">
+                            作业描述：[[item.desc]]
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="layui-row">
+                        <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+                            <span class="layui-badge layui-bg-orange" v-if="item.taskrecord.score_id==0">[[item.taskrecord.score_text]]</span>
+                            <span class="layui-badge layui-bg-green" v-if="item.taskrecord.score_id==1">[[item.taskrecord.score]]</span>
+                            <span class="layui-badge"
+                                  v-if="item.taskrecord.score_id==2">[[item.taskrecord.score_text]]</span>
+                        </div>
+                        <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+                            评语：[[item.taskrecord.feedback]]
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+        <span id="page"></span>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var cid = B.getQueryString('cid');
+        var app = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: B.gen_data(function (params) {
+                }),
+                methods: {
+                    loadData: function (pageindex, pagesize) {
+                        var params = {courseid: cid, userid:{{ me.id }},orderby:'-id'};
+                        params.q__name__icontains = $('#search_text').val();
+                        B.gen_loadData(app, 'get_student_task_list', params, 'page', pageindex, pagesize, function (thiz) {
+                            for (var i = 0; i < thiz.items.length; i++) {
+                                var files_str = "";
+                                var files_json = JSON.parse(thiz.items[i].files);
+                                files_str='<a href="' + files_json.url + '" download="' + files_json.filename + '">下载</a><br>';
+{#                                for (var j = 0; j < files_json.length; j++) {#}
+{#                                    files_str += '<a href="' + files_json[j].url + '" download="' + files_json[j].filename + '">' + files_json[j].filename + '</a><br>'#}
+{#                                }#}
+                                thiz.items[i].files_link = files_str;
+                            }
+
+                        });
+                    }
+                }
+            }
+        );
+
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+        function onTabSelected() {
+            app.loadData(app.$data.pageindex, app.$data.pagesize);
+        }
+
+    </script>
+{% endblock %}

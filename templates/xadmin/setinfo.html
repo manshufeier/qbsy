@@ -1,0 +1,67 @@
+{% extends "xadmin/base-hui.html" %}
+{% block head %}
+{% endblock %}
+{% block body %}
+
+    <style>
+        body {
+            padding: 10px;
+        }
+
+        table {
+            margin-left: 20%;
+            width: 40%;
+        }
+    </style>
+
+    <div>
+        <form id="ff">
+            <table cellpadding="5" class="table">
+                <tr>
+                    <td>姓名:</td>
+                    <td><input class="input-text radius" type="text" name="name" value="{{ me.name|default:'' }}"
+                               data-options="required:true"></td>
+                </tr>
+                <tr>
+                    <td>电话:</td>
+                    <td><input class="input-text radius" type="text" name="phone" value="{{ me.phone|default:'' }}"
+                               data-options="validType:'phone'"></td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td><input class="input-text radius" type="text" name="email" value="{{ me.email|default:'' }}"
+                               data-options="validType:'email'"></td>
+                </tr>
+                <tr>
+                    <td>地址:</td>
+                    <td><input class="input-text radius" type="text" name="address"
+                               value="{{ me.address|default:'' }}"></td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <div class="btn btn-success radius" onclick="saveData();"><i class="Hui-iconfont">&#xe6e1;</i>&nbsp;保存</div>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+        function saveData() {
+            var data = B.getInputValues($("#ff [name]"));
+            B.display_loading();
+            B.callapi('changeUserInfo', data, function (res) {
+                B.close_loading();
+                if (res) {
+                    layer.msg('保存成功！！！', {icon: 1});
+                }
+            })
+        }
+    </script>
+{% endblock %}
+
+

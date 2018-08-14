@@ -1,0 +1,131 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>用户列表</title>
+
+{% endblock %}
+
+
+{% block body %}
+
+
+    <style>
+        td, th {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+    </style>
+    <div id="app" style="padding: 10px;" v-cloak>
+        <button class="btn btn-primary radius size-S" onclick="B.addWindowTab('添加用户','/xadmin/edituser2.html')"><i class="Hui-iconfont">&#xe604;</i>&nbsp;添加用户
+        </button>
+        <button class="btn btn-danger radius size-S"
+                onclick="B.del_datas('select_elem','User',function() {app.loadData(app.$data.pageindex, app.$data.pagesize);});">
+            <i class="Hui-iconfont">&#xe609;</i>&nbsp;删除所选用户
+        </button>
+        <button class="btn btn-success radius size-S" onclick="B.unlock_user('User',function(){app.loadData(app.$data.pageindex, app.$data.pagesize);});"><i class="Hui-iconfont">&#xe605;</i>&nbsp;激活用户</button>
+        <button class="btn btn-warning radius size-S" onclick="B.lock_user('User',function(){app.loadData(app.$data.pageindex, app.$data.pagesize);});"><i class="Hui-iconfont">&#xe60e;</i>&nbsp;锁定用户</button>
+        <vue-search id="search_text" onload="app.loadData(app.$data.pageindex,app.$data.pagesize);"></vue-search>
+        <table class="table table-border table-bg table-bordered table-hover" style="margin-top: 10px;">
+            <thead>
+            <tr>
+                <th width="5%"><input id="select_checkbox" type="checkbox"
+                                      onclick="B.gen_select_all('select_checkbox','select_elem')"></th>
+                <th>用户名</th>
+                <th>姓名</th>
+                <th>角色</th>
+                <th>电话</th>
+                <th>邮箱</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in items" onclick="B.select_selected(this);">
+                <th class="sel"><input type="checkbox" :id="item.sel_id" name="select_elem" onclick="B.select_selected($(this).parent().parent());"></th>
+                <td>[[item.username]]</td>
+                <td>[[ item.truename ]]</td>
+                <td>[[ item.role_name ]]</td>
+                <td>[[ item.phone ]]</td>
+                <td>[[ item.email ]]</td>
+                <td>[[ item.status_text]]</td>
+                <td><a href="javascript:void(0);" :onclick="item.edit_link" style="color: black;"><i class="Hui-iconfont">&#xe6df;</i></a></td>
+            </tr>
+            </tbody>
+        </table>
+        <span id="page"></span>
+    </div>
+
+
+{% endblock %}
+
+{% block script %}
+
+    <script>
+
+        var app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#app',
+            data: B.gen_data(function (params) {
+            }),
+            methods: {
+                loadData: function (pageindex, pagesize) {
+                    B.gen_loadData(app, "getUserList", {q__name__icontains__or__username__icontains: $("#search_text").val()}, 'page', pageindex, pagesize, function (thiz) {
+                        for (var i = 0; i < thiz.items.length; i++) {
+                            thiz.items[i].edit_link = "B.addWindowTab('编辑" + thiz.items[i].showname + "','/xadmin/edituser2.html?id=" + thiz.items[i].id + "')";
+                        }
+                    });
+                }
+            }
+        });
+
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+{##}
+{#        function unlock_user() {#}
+{#            ids = B.get_select_ids('select_elem');#}
+{#            if (ids.length > 0) {#}
+{#                layer.confirm('确定要激活' + ids.length + '个用户么？', {icon: 3, title: '提示'}, function (index) {#}
+{#                    Base.callapi("backUsers", {ids: ids.join(',')}, function (res) {#}
+{#                        if (res && res.data) {#}
+{#                            layer.msg('操作成功！！！', {icon: 1});#}
+{#                            app.loadData(app.$data.pageindex, app.$data.pagesize);#}
+{#                        }#}
+{#                    });#}
+{#                });#}
+{#            }#}
+{#        }#}
+{##}
+{#        function lock_user() {#}
+{#            ids = B.get_select_ids('select_elem');#}
+{#            if (ids.length > 0) {#}
+{#                layer.confirm('确定要锁定' + ids.length + '个用户么？', {icon: 3, title: '提示'}, function (index) {#}
+{#                    Base.callapi("cancelUsers", {ids: ids.join(',')}, function (res) {#}
+{#                        if (res && res.data) {#}
+{#                            layer.msg('操作成功！！！', {icon: 1});#}
+{#                            app.loadData(app.$data.pageindex, app.$data.pagesize);#}
+{#                        }#}
+{#                    });#}
+{#                });#}
+{#            }#}
+{#        }#}
+
+        function onTabSelected() {
+            app.loadData(app.$data.pageindex, app.$data.pagesize);
+        }
+
+    </script>
+{% endblock %}
+
+
+
+
+
+

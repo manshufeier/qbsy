@@ -1,0 +1,5 @@
+gen_opration(opration_k_map.get('xuser_admin_mgr'), '管理员用户', 'User',href='/xadmin/modellist.html?modelname=User&q__role__id=1', isedit=True),
+gen_opration(opration_k_map.get('xuser_teacher_mgr'), '老师用户', 'User',href='/xadmin/modellist.html?modelname=User&q__role__id=2', isedit=True),
+gen_opration(opration_k_map.get('xuser_student_mgr'), '学生用户', 'User',href='/xadmin/modellist.html?modelname=User&q__role__id=3', isedit=True),
+gen_opration(opration_k_map.get('xuser_reception_mgr'), '行政用户', 'User',href='/xadmin/modellist.html?modelname=User&q__role__id=4', isedit=True),
+gen_opration(opration_k_map.get('xuser_super_reception_mgr'), '行政主管用户', 'User',href='/xadmin/modellist.html?modelname=User&q__role__id=5', isedit=True),

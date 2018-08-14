@@ -1,0 +1,111 @@
+{% extends "xadmin/base-hui.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+    <style type="text/css">
+        .no_wrap {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+    </style>
+    {% if site.setting.sys_notice != '' %}
+        <div class="Huialert Huialert-success" style="margin-bottom: 5px;">
+            <i class="Hui-iconfont" onclick="$(this).parent().remove();">&#xe6a6;</i>
+            系统公告:{{ site.setting.sys_notice }}
+        </div>
+    {% endif %}
+
+    {% if me.isadmin or me.is_super_reception %}
+        <div id="app" style="padding:10px 10px;" v-cloak>
+            <table class="table table-border table-bordered table-bg radius">
+                <thead>
+                <tr>
+                    <th colspan="12" scope="col" style="background: #acd1ee;">当前正在进行的课程群</th>
+                </tr>
+                <tr class="text-c">
+                    <th>学年名称</th>
+                    <th>课程群名称</th>
+                    <th>课程群时间</th>
+                    <th>课程班数量</th>
+                    <th>学生数</th>
+                    <th>预报名人次</th>
+                    <th>总人次</th>
+                    <th>上课人次</th>
+                    <th>保留课时</th>
+                    <th>退课人次</th>
+                    <th>退课率</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="text-c" v-for="item in items">
+                    <td>[[item.schoolyearinfo_name]]</td>
+                    <td>[[item.name]]</td>
+                    <td>开始:[[item.starttime_text]]<br>结束:[[item.endtime_text]]</td>
+                    <td>[[item.course_count]]</td>
+                    <td>[[item.student_count_true]]</td>
+                    <td>[[item.preenroll_count]]</td>
+                    <td>[[item.student_count]]</td>
+                    <td>[[item.course_doing_count]]</td>
+                    <td>[[item.course_will_doing_count]]</td>
+                    <td>[[item.course_leaving_count]]</td>
+                    <td>[[item.leaving_rate]]</td>
+                    <td>
+                        <a href="javascript:void(0);" :onclick="item.view_stat">查看统计</a>&nbsp;
+                        <a href="javascript:void(0);" :onclick="item.view_course_link">查看课程</a>&nbsp;
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+
+    <script>
+
+        {% if me.isadmin or me.is_super_reception %}
+            var app = new Vue(
+                {
+                    delimiters: ['[[', ']]'],
+                    el: '#app',
+                    data: B.gen_data(function (params) {
+                        params.coursedata = [];
+                    }),
+                    methods: {
+                        loadData: function (pageindex, pagesize) {
+                            var thiz = this;
+                            B.gen_loadData(app, 'get_class_doing', {}, 'page', pageindex, pagesize, function (thiz) {
+                                for (var i = 0; i < thiz.items.length; i++) {
+                                    thiz.items[i].view_school_stat = thiz.items[i].view_task_link = "B.addWindowTab('查看" + thiz.items[i].name + "学校统计','/xadmin/model_statistics.html?modelname=EnrollCourseInfo&q__gradecourseinfo__classinfo__id=" + thiz.items[i].id + "&nameparam=enrollinfo__school__schoolname&valueparam=enrollinfo__school&title=统计&subtitle=哈哈')";
+                                }
+                            });
+                        }
+                    }
+                }
+            );
+
+            app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+            function onTabSelected() {
+                app.loadData(app.$data.pageindex, app.$data.pagesize);
+            }
+        {% endif %}
+
+    </script>
+
+{% endblock %}

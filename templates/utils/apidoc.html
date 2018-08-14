@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- template:{{template_name}} -->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    {% load staticfiles %}
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+    <title>API文档</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'lib/h-ui/css/H-ui.min.css' %} "/>
+    <style type="text/css">
+        body {
+            padding: 10px;
+        }
+
+        a{
+            color:dodgerblue;
+        }
+
+        td, th {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+<span>api路径:{{ api_url }}&nbsp;&nbsp;&nbsp;&nbsp;请求方式:get/post&nbsp;&nbsp;&nbsp;&nbsp;参数说明:_param(可选参数,如page,size,各种查询条件,当返回为列表时，默认为每页10条)</span>
+
+<table style="width:100%;" class="table table-border table-bordered radius">
+    <tr>
+        <td>接口名称</td>
+        <td>参数</td>
+        <td>限制</td>
+        <td>说明</td>
+    </tr>
+    {% for api in apis %}
+        <tr>
+            <td>{{ api.name }}</td>
+            <td>
+                <ul>
+                    {% for arg in api.args %}
+                        <li>
+                            {{ arg.name }}
+                            {% if arg.hasdefault %}
+                                默认值:<strong>{{ arg.default }}</strong>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </td>
+            <td>
+                {% if api.logined or api.token %}
+                    需登录
+                {% endif %}
+                {% if api.userrole %}
+                    <br/>
+                    权限:
+                    {% for r in api.userrole %}
+                        {% if not forloop.first %},{% endif %}
+                        <strong>{{ r }}</strong>
+                    {% endfor %}
+                {% endif %}
+            </td>
+            <td><pre>{{ api.doc|default:'' |safe}}</pre></td>
+        </tr>
+    {% endfor %}
+</table>
+</body>
+</html>
+<!-- inruan tech -->

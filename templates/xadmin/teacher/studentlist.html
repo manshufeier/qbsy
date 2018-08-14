@@ -1,0 +1,87 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>学生列表</title>
+
+{% endblock %}
+
+{% block body %}
+
+    <style>
+        td, th {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+
+    </style>
+
+    <div id="app" style="margin: 10px;" v-cloak="display:none;">
+
+        <div class="layui-form-item" style="float: right">
+            <input type="text" id="search_text" style="width:150px" class="input-text radius size-S"
+                   oninput="app.loadData(app.$data.pageindex, app.$data.pagesize);"
+                   placeholder="输入你的搜索内容">
+        </div>
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th>学生</th>
+                <th>学校</th>
+                <th>年级</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in items">
+                <td>[[item.enrollinfo.user.showname]]</td>
+                <td>[[item.enrollinfo.user.school_name]]</td>
+                <td>[[item.enrollinfo.user.grade_name]]</td>
+                <td><a href="javascript:void(0);" :onclick="item.student_exam_link">查看成绩记录</a></td>
+            </tr>
+            </tbody>
+        </table>
+        <span id="page"></span>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var cid = B.getQueryString('cid');
+        var app = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: B.gen_data(function (params) {
+                }),
+                methods: {
+                    loadData: function (pageindex, pagesize) {
+                        var params = {courseid: cid,orderdy:'-id',s_user_id:{{me.id}} };
+                        params.q__name__icontains = $('#search_text').val();
+                        B.gen_loadData(app, 'get_teacher_student_list', params, 'page', pageindex, pagesize, function (thiz) {
+                        });
+                    }
+                }
+            }
+        );
+
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+        function onTabSelected() {
+            app.loadData(app.$data.pageindex, app.$data.pagesize);
+        }
+
+    </script>
+{% endblock %}

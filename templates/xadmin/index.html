@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load staticfiles %}
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/h-ui/css/H-ui.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/h-ui.admin/css/H-ui.admin.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/h-ui/Hui-iconfont/1.0.8/iconfont.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/h-ui.admin/skin/default/skin.css" id="skin"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/layui/css/layui.css"/>
+    <title>{{ site.get_setting.sitename }}</title>
+</head>
+<body>
+<header class="navbar-wrapper">
+    <div class="navbar navbar-fixed-top">
+        <div class="container-fluid cl"><a class="logo navbar-logo f-l mr-10 hidden-xs"
+                                           href="/xadmin/">{{ site.get_setting.sitename }}</a>
+            <div class="logo navbar-logo-m f-l mr-10 visible-xs" href="javascript:void(0);">
+                <a href="javascript:void(0);" onclick="removeIframe();" class="navbar-logo-m"><i class="Hui-iconfont"
+                                                                                                 style="font-size: 15px;">&#xe67d;</i></a>&nbsp;&nbsp;{{ site.get_setting.sitename }}
+            </div>
+            <a aria-hidden="false" class="nav-toggle Hui-iconfont visible-xs" href="javascript:;">&#xe667;</a>
+            <nav id="Hui-userbar" class="nav navbar-nav navbar-userbar hidden-xs">
+                <ul class="cl">
+                    {% if site.setting.sys_debug %}
+                        <li>切换角色测试&nbsp;
+                            <select class="select-box radius" style="width: 80px;" name="role_id"
+                                    onchange="changeUserByRole($(this).children('option:selected').val());">
+                                {% for r in site.roles %}
+                                    {% if r.id == me.role_id %}
+                                        <option value="{{ r.id }}" selected>{{ r.name }}</option>
+                                    {% else %}
+                                        <option value="{{ r.id }}">{{ r.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </li>
+                    {% endif %}
+                    <li class="dropDown dropDown_hover">
+                        <a href="#" class="dropDown_A">欢迎您,{{ me.showname }}<i
+                                class="Hui-iconfont">&#xe6d5;</i></a>
+                        <ul class="dropDown-menu menu radius box-shadow">
+                            {#                            <li><a href="javascript:addTab('信息设置', '/xadmin/setinfo.html');">信息设置</a></li>#}
+                            <li><a href="javascript:addTab('修改密码', '/xadmin/changepwd.html');">修改密码</a></li>
+                            <li><a href="javascript:logoutQuery();">退出登录</a></li>
+                        </ul>
+                    </li>
+                    <li id="Hui-skin" class="dropDown right dropDown_hover"><a href="javascript:;"
+                                                                               class="dropDown_A"
+                                                                               title="换肤"><i class="Hui-iconfont"
+                                                                                             style="font-size:18px">&#xe62a;</i></a>
+                        <ul class="dropDown-menu menu radius box-shadow">
+                            <li><a href="javascript:;" data-val="default" title="默认（黑色）">默认（黑色）</a></li>
+                            <li><a href="javascript:;" data-val="blue" title="蓝色">蓝色</a></li>
+                            <li><a href="javascript:;" data-val="green" title="绿色">绿色</a></li>
+                            <li><a href="javascript:;" data-val="red" title="红色">红色</a></li>
+                            <li><a href="javascript:;" data-val="yellow" title="黄色">黄色</a></li>
+                            <li><a href="javascript:;" data-val="orange" title="橙色">橙色</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+<aside class="Hui-aside">
+    <div class="menu_dropdown bk_2">
+        {% for op in view.get_me_oprations %}
+            {% if op.oplen != 0 %}
+                <dl>
+                    <dt><i class="Hui-iconfont">{{ op.icon | safe }}</i>
+                        {% if op.indexname %}{{ op.indexname }}{% else %}{{ op.name }}{% endif %}<i
+                                class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i>
+                    </dt>
+                    <dd>
+                        <ul>
+                            {% for ops in op.oprations %}
+                                {% if ops.isindexshow %}
+                                    <li><a data-href="{{ ops.href }}"
+                                           data-title="{{ ops.name }}"
+                                           href="javascript:void(0)">{{ ops.name }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </dd>
+                </dl>
+            {% endif %}
+        {% endfor %}
+        {% if me.isteacher %}
+            <dl id="menu-class">
+                <dt><i class="Hui-iconfont">&#xe616;</i> 课程管理<i
+                        class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i>
+                </dt>
+                <dd>
+                    <ul>
+                        <li><a data-href="/xadmin/teacher/courselist.html" data-title="我的课程"
+                               href="javascript:void(0)">我的课程</a></li>
+                    </ul>
+                </dd>
+            </dl>
+        {% endif %}
+        {% if me.isstudent %}
+            <dl id="menu-class">
+                <dt><i class="Hui-iconfont">&#xe616;</i> 课程管理<i
+                        class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i>
+                </dt>
+                <dd>
+                    <ul>
+                        <li><a data-href="/xadmin/student/courselist.html" data-title="我的课程"
+                               href="javascript:void(0)">我的课程</a></li>
+                    </ul>
+                </dd>
+            </dl>
+        {% endif %}
+        {% if me.is_teacher_assistant %}
+
+            <dl id="menu-class">
+                <dt><i class="Hui-iconfont">&#xe616;</i> 课程管理<i
+                        class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i>
+                </dt>
+                <dd>
+                    <ul>
+                        <li><a data-href="/xadmin/modellist.html?modelname=TeacherAssistantCourse" data-title="我的课程"
+                               href="javascript:void(0)">我的课程</a></li>
+                    </ul>
+                </dd>
+            </dl>
+        {% endif %}
+
+        <dl id="menu-class">
+            <dt><i class="Hui-iconfont">&#xe616;</i> 个人信息<i
+                    class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i>
+            </dt>
+            <dd>
+                <ul>
+                    <li><a data-href="/xadmin/changepwd.html" data-title="修改密码">修改密码</a></li>
+                    <li><a href="javascript:void(0);" onclick="logoutQuery();">退出登录</a></li>
+                </ul>
+            </dd>
+        </dl>
+    </div>
+</aside>
+<div class="dislpayArrow hidden-xs"><a class="pngfix" href="javascript:void(0);" onClick="displaynavbar(this)"></a>
+</div>
+<section class="Hui-article-box">
+    <div id="Hui-tabNav" class="Hui-tabNav hidden-xs">
+        <div class="Hui-tabNav-wp">
+            <ul id="min_title_list" class="acrossTab cl">
+                {% if me.isstudent %}
+                    <li class="active">
+                        <span title="我的课程" data-href="/xadmin/student/courselist.html">我的课程</span>
+                        <em></em></li>
+                {% elif me.isteacher %}
+                    <li class="active">
+                        <span title="我的课程" data-href="/xadmin/teacher/courselist.html">我的课程</span>
+                        <em></em></li>
+                {% else %}
+                    <li class="active">
+                        <span title="欢迎使用" data-href="/xadmin/welcome.html">欢迎使用</span>
+                        <em></em></li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="Hui-tabNav-more btn-group"><a id="js-tabNav-prev" class="btn radius btn-default size-S"
+                                                  href="javascript:;"><i class="Hui-iconfont">&#xe6d4;</i></a><a
+                id="js-tabNav-next" class="btn radius btn-default size-S" href="javascript:;"><i
+                class="Hui-iconfont">&#xe6d7;</i></a>
+        </div>
+    </div>
+    <div id="iframe_box" class="Hui-article">
+        {% if me.isstudent %}
+            <div class="show_iframe">
+                <div style="display:none" class="loading"></div>
+                <iframe scrolling="yes" frameborder="0" src="/xadmin/student/courselist.html"></iframe>
+            </div>
+        {% elif me.isteacher %}
+            <div class="show_iframe">
+                <div style="display:none" class="loading"></div>
+                <iframe scrolling="yes" frameborder="0" src="/xadmin/teacher/courselist.html"></iframe>
+            </div>
+        {% else %}
+            <div class="show_iframe">
+                <div style="display:none" class="loading"></div>
+                <iframe scrolling="yes" frameborder="0" src="/xadmin/welcome.html"></iframe>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<div class="contextMenu" id="Huiadminmenu">
+    <ul>
+        <li id="closethis">关闭当前</li>
+        <li id="closeall">关闭全部</li>
+    </ul>
+</div>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/base.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/custom.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.base64.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}lib/h-ui/js/H-ui.min.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}lib/h-ui.admin/js/H-ui.admin.js?_={{ site.get_setting.staticversion }}"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.contextmenu.r2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/iblog.js?_={{ site.staticversion }}"></script>
+<script type="text/javascript">
+
+    function addTab(subtitle, url) {
+        var bStop = false,
+            bStopIndex = 0,
+            topWindow = $(window.parent.document),
+            show_navLi = topWindow.find("#min_title_list li"),
+            iframe_box = topWindow.find("#iframe_box");
+        show_navLi.each(function () {
+            if ($(this).find('span').attr("data-href") == url) {
+                bStop = true;
+                bStopIndex = show_navLi.index($(this));
+                return false;
+            }
+        });
+        if (!bStop) {
+            creatIframe(url, subtitle);
+            min_titleList();
+        }
+        else {
+            show_navLi.removeClass("active").eq(bStopIndex).addClass("active");
+            iframe_box.find(".show_iframe").hide().eq(bStopIndex).show();
+        }
+    }
+
+    function logoutQuery() {
+        B.showHuiDialog('提示', "确定退出系统吗?", function (r) {
+            B.callapi("logout", null, function (res) {
+                if (res) {
+                    window.location.href = "/login.html";
+                }
+            })
+        })
+    }
+    {% if site.setting.sys_debug %}
+        function changeUserByRole(roleid) {
+            B.callapi('changeUserByRole', {roleid: roleid}, function (res) {
+                if (res) {
+                    window.location.reload();
+                }
+            });
+        }
+    {% endif %}
+</script>
+
+</body>

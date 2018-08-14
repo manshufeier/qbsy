@@ -1,0 +1,114 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>批改作业</title>
+
+{% endblock %}
+
+{% block body %}
+
+    <style>
+        .no_wrap {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+
+    </style>
+
+    <div id="app" style="margin: 10px;" v-cloak="display:none;">
+
+        <div class="layui-form-item" style="float: right">
+            <input type="text" id="search_text" style="width:150px" class="input-text radius size-S"
+                   oninput="app.loadData(app.$data.pageindex, app.$data.pagesize);"
+                   placeholder="输入你的搜索内容">
+        </div>
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th>用户</th>
+                <th>作业</th>
+                <th>分值</th>
+                <th>评语</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in items">
+                <td>[[item.user_text]]</td>
+                <td>[[item.task_text]]</td>
+                <td>
+                    <span class="layui-badge" v-if="item.score_id==0">[[item.score_text]]</span>
+                    <span class="layui-badge layui-bg-green" v-if="item.score_id==1">[[item.score]]</span>
+                </td>
+                <td>[[item.feedback]]</td>
+{#                <td><input type="text" :value="item.score" class="layui-input" :oninput="item.modify_task_score"></td>#}
+{#                <td><input type="text" :value="item.feedback" class="layui-input" :oninput="item.modify_task_feedback"></td>#}
+                <td><a href="javascript:void(0);" :onclick="item.correct">批改</a> </td>
+            </tr>
+            </tbody>
+        </table>
+        <span id="page"></span>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var taskid = B.getQueryString('taskid');
+        var app = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: B.gen_data(function (params) {
+                }),
+                methods: {
+                    loadData: function (pageindex, pagesize) {
+                        var params = {taskid: taskid,orderby:'-id'};
+                        params.s_user_id={{ me.id }};
+                        params.q__name__icontains = $('#search_text').val();
+                        B.gen_loadData(app, 'get_task_record_list', params, 'page', pageindex, pagesize, function (thiz) {
+                            for (var i = 0; i < thiz.items.length; i++) {
+                                thiz.items[i].correct="B.addWindowTab('批改"+thiz.items[i].user_text+"作业','/xadmin/editmodel.html?modelname=TaskRecord&id="+thiz.items[i].id+"&isremoved=-1');";
+                            }
+                        });
+                    }
+                }
+            }
+        );
+
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+        function onTabSelected() {
+            app.loadData(app.$data.pageindex, app.$data.pagesize);
+        }
+
+{#        function modify_task_score(taskrecordid, score) {#}
+{#            B.display_loading();#}
+{#            B.callapi('modify_task_record', {taskrecordid: taskrecordid, score: score}, function (res) {#}
+{#                if (res && res.data) {#}
+{#                    B.close_loading();#}
+{#                }#}
+{#            });#}
+{#        }#}
+{#        function modify_task_feedback(taskrecordid, feedback) {#}
+{#            B.display_loading();#}
+{#            B.callapi('modify_task_record_feedback', {taskrecordid: taskrecordid, feedback: feedback}, function (res) {#}
+{#                if (res && res.data) {#}
+{#                    B.close_loading();#}
+{#                }#}
+{#            });#}
+{#        }#}
+    </script>
+{% endblock %}

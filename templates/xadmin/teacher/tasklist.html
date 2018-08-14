@@ -1,0 +1,146 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>作业管理</title>
+
+{% endblock %}
+
+{% block body %}
+
+    <style>
+        .no_wrap {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+
+    </style>
+
+    <div id="app" style="margin: 10px;" v-cloak="display:none;">
+
+        <div class="layui-row">
+            <div class="layui-col-xs12 layui-col-sm6">
+                <button class="layui-btn layui-btn-small" :onclick="add_task">添加作业</button>
+                <button class="layui-btn layui-btn-danger layui-btn-small"
+                        onclick="B.del_datas('select_elem','Task',function() {app.loadData(app.$data.pageindex, app.$data.pagesize);});">
+                    删除作业
+                </button>
+                <button class="layui-btn layui-btn-small" onclick="export_all_task_data(B.getQueryString('cid'));">
+                    导出所有作业成绩
+                </button>
+            </div>
+            <div class="layui-col-xs12 layui-col-sm6">
+                    <input type="text" id="search_text" style="width:150px;float: right;margin-top: 5px;" class="input-text radius size-S"
+                           oninput="app.loadData(app.$data.pageindex, app.$data.pagesize);"
+                           placeholder="输入你的搜索内容">
+            </div>
+        </div>
+
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th><input id="select_checkbox" type="checkbox"
+                           onclick="B.gen_select_all('select_checkbox','select_elem');"></th>
+                <th>基本信息</th>
+                <th>操作</th>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr v-for="item in items" onclick="B.select_selected(this);">
+                <td><input type="checkbox" :id="item.sel_id"
+                           name="select_elem"
+                           onclick="B.select_selected($(this).parent().parent());"></td>
+                <td>
+                    <div class="layui-row">
+                        <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+                            课程：[[item.course_text]]
+                            <span class="layui-badge layui-bg-green"
+                                  v-if="item.taskstatus_id==1">[[item.taskstatus]]</span>
+                            <span class="layui-badge" v-if="item.taskstatus_id==2">[[item.taskstatus]]</span>
+                        </div>
+                        <div class="layui-col-xs12 layui-col-sm6 layui-col-md6">
+                            作业名：[[item.taskname]]
+                        </div>
+                        <div class="layui-col-xs12 layui-col-sm6 layui-col-md6">
+                            限制时间：[[item.qtime_text]]
+                        </div>
+                    </div>
+                </td>
+                <td class="no_wrap">
+                    <div class="layui-row">
+                        <div class="layui-col-xs12 layui-col-sm6">
+                            <a href="javascript:void(0);" :onclick="item.edit_task_link">编辑</a>
+                        </div>
+                        <div class="layui-col-xs12 layui-col-sm6">
+                            <i class="layui-icon">&#xe65f;</i>
+                        </div>
+                        <div class="layui-col-xs12 layui-col-sm6">
+                            <a href="javascript:void(0);" :onclick="item.modify_task_link">批改</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+        <span id="page"></span>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+
+        var cid = B.getQueryString('cid');
+        var app = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: B.gen_data(function (params) {
+                    params.add_task = "B.addWindowTab('添加作业','/xadmin/editmodel.html?modelname=Task&q__course_id=" + cid + "')";
+                }),
+                methods: {
+                    loadData: function (pageindex, pagesize) {
+                        var params = {q__course__id: cid, modelname: 'Task',orderby:'-id'};
+                        params.q__taskname__icontains = $('#search_text').val();
+                        params.s_user_id={{ me.id }};
+                        B.gen_loadData(app, 'getModelList', params, 'page', pageindex, pagesize, function (thiz) {
+                            for (var i = 0; i < thiz.items.length; i++) {
+                                thiz.items[i].edit_task_link = "B.addWindowTab('编辑" + (thiz.items[i].name) + "','/xadmin/editmodel.html?modelname=Task&id=" + thiz.items[i].id + "&q__course_id=" + cid + "')";
+                                thiz.items[i].modify_task_link = "B.addWindowTab('批改" + (thiz.items[i].name) + "','/xadmin/teacher/modifytask.html?taskid=" + thiz.items[i].id + "')";
+                            }
+                        });
+                    }
+                }
+            }
+        );
+
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+        function onTabSelected() {
+            app.loadData(app.$data.pageindex, app.$data.pagesize);
+        }
+
+        function export_all_task_data(courseid) {
+            B.callapi('export_task_scores_excel', {courseid: courseid}, function (res) {
+                if (res && res.data) {
+                    window.location.href = res.data;
+                }
+            });
+        }
+
+    </script>
+{% endblock %}

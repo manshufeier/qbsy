@@ -1,0 +1,88 @@
+{% extends 'xadmin/base-hui.html' %}
+
+{% block head %}
+
+    <title>查看作业</title>
+
+{% endblock %}
+
+{% block body %}
+
+    <style>
+        td, th {
+            white-space: nowrap;
+        }
+
+        a {
+            color: dodgerblue;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .radius {
+            border-radius: 2px;
+        }
+
+    </style>
+
+    <div id="app" style="margin: 10px;">
+        <div class="layui-form-item" style="float: right">
+            <input type="text" id="search_text" style="width:150px" class="input-text radius size-S"
+                   oninput="app.loadData(app.$data.pageindex, app.$data.pagesize);"
+                   placeholder="输入你的搜索内容">
+        </div>
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th><input id="select_checkbox" type="checkbox"
+                           onclick="B.gen_select_all('select_checkbox','select_elem');"></th>
+                <th>作业名</th>
+                <th>限制时间</th>
+                <th>操作</th>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in items">
+                <td>[[item.taskname]]</td>
+                <td>[[item.qtime_text]]</td>
+                <td><a href="javascript:void(0);" :onclick="item.edit_task_link">作业.docx</a></td>
+            </tr>
+
+            </tbody>
+        </table>
+        <span id="page"></span>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var cid = B.getQueryString('cid');
+        var app = new Vue(
+            {
+                delimiters: ['[[', ']]'],
+                el: '#app',
+                data: B.gen_data(function (params) {
+                }),
+                methods: {
+                    loadData: function (pageindex, pagesize) {
+                        var params = {modelname: 'EnrollCourseInfo', q__gradecourseinfo_id: cid,orderby:'-id'};
+                        params.q__name__icontains = $('#search_text').val();
+                        B.gen_loadData(app, 'getModelList', params, 'page', pageindex, pagesize, function (thiz) {
+                        });
+                    }
+                }
+            }
+        );
+
+        app.loadData(app.$data.pageindex, app.$data.pagesize);
+
+        function onTabSelected() {
+            app.loadData(app.$data.pageindex, app.$data.pagesize);
+        }
+
+    </script>
+{% endblock %}
